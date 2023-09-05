@@ -1,3 +1,5 @@
 .venv
 fannie-mae/data/*
 .env
+fannie-mae/.env
+fannie-mae/passwords.txt

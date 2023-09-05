@@ -1,4 +1,4 @@
-from issuance_migration import *
+from migrations.issuance_migration import *
 
 class Security_Issuance_File_Transformation(Issuance_File_Transformation):
     """a class instantiated for each Security Issuance file in a dataset. Reads files from S3, 
@@ -41,10 +41,3 @@ class Security_Issuance_Files_Migration:
             self.file_system, path, CSV_Converter(self.file_system, path)()).final_table()
             for path in self.from_paths], promote=True)
         pq.write_table(issuance_table, self.to_path, filesystem=self.file_system)
-
-if __name__ == '__main__':
-
-    s3 = fs.S3FileSystem(access_key='***REMOVED***',
-                     secret_key='***REMOVED***',
-                     region='***REMOVED***')
-    Security_Issuance_Files_Migration(s3, '***REMOVED***', '***REMOVED***')()

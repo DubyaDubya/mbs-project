@@ -1,4 +1,4 @@
-from issuance_migration import *
+from migrations.issuance_migration import *
 
 class Loan_Issuance_File_Transformation(Issuance_File_Transformation):
     """a class instantiated for each Issuance file in a dataset. Reads files from S3, 
@@ -55,13 +55,3 @@ class Loan_Issuance_Files_Migration:
                              partitioning=self.partitioning, filesystem=self.file_system, existing_data_behavior='overwrite_or_ignore')
             print(f'read and wrote {path}')
 
-
-    
-
-if __name__ == '__main__':
-    s3 = fs.S3FileSystem(access_key='***REMOVED***',
-                     secret_key='***REMOVED***',
-                     region='***REMOVED***')
-    
-    lm = Loan_Issuance_Files_Migration(s3, '***REMOVED***', '***REMOVED***')
-    lm()

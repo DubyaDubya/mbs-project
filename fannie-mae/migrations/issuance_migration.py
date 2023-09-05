@@ -1,6 +1,6 @@
 import pyarrow as pa
 from pyarrow import dataset as ds, fs, compute as cp, parquet as pq
-from table_from_csv import CSV_Converter
+from migrations.table_from_csv import CSV_Converter
 
 #Don't really need to partition issuance files
 #Do need to partition Loan Level files, and need to partition them by Issuance date (year/month)

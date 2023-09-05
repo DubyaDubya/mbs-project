@@ -34,8 +34,7 @@ class Loan_Issuance_File_Transformation(Issuance_File_Transformation):
         self._drop_filler_columns()
         return self.table
 
-    #pq.write_table(table)
-    #pq.write_table(final_table, 'william-mbs-data/fanniemae/parquet/issuance-data.parquet', filesystem=s3)
+    
 
 class Loan_Issuance_Files_Migration:
 

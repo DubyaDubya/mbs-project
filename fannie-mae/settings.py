@@ -9,6 +9,10 @@ aws_secret_key = os.environ['AWS_SECRET_KEY']
 
 security_issuance_src = os.environ['SECURITY_ISSUANCE_SRC']
 security_issuance_dest = os.environ['SECURITY_ISSUANCE_DEST']
+security_issuance_folder = os.environ['SECURITY_ISSUANCE_FOLDER']
 
 loan_issuance_src = os.environ['LOAN_ISSUANCE_SRC']
 loan_issuance_dest = os.environ['LOAN_ISSUANCE_DEST']
+
+fed_holdings_dest = os.environ['FED_HOLDINGS_DEST']
+fed_holdings_folder = os.environ['FED_HOLDINGS_FOLDER']

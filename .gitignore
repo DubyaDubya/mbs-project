@@ -3,4 +3,5 @@ fannie-mae/data/*
 .env
 fannie-mae/.env
 fannie-mae/passwords.txt
-*/__pycache/*
+*/__pycache__/*
+__pycache__

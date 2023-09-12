@@ -16,3 +16,5 @@ loan_issuance_dest = os.environ['LOAN_ISSUANCE_DEST']
 
 fed_holdings_dest = os.environ['FED_HOLDINGS_DEST']
 fed_holdings_folder = os.environ['FED_HOLDINGS_FOLDER']
+
+final_folder=os.environ['FINAL_QUERIES_FOLDER']

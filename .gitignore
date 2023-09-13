@@ -1,7 +1,6 @@
 .venv
-fannie-mae/data/*
+data
 .env
-fannie-mae/.env
-fannie-mae/passwords.txt
-*/__pycache__/*
+passwords.txt
+*/__pycache__
 __pycache__

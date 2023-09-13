@@ -51,7 +51,7 @@ upb_by_channel_vs_purchases = """WITH totals AS (SELECT Issuance_Year, Issuance_
 SUM(CASE WHEN Channel = 'R' THEN "Issuance Investor Loan UPB" ELSE 0 END) AS retail_upb,
 SUM(CASE WHEN Channel = 'C' THEN "Issuance Investor Loan UPB" ELSE 0 END ) AS correspondent_upb,
 SUM(CASE WHEN Channel = 'B' THEN "Issuance Investor Loan UPB" ELSE 0 END) AS broker_upb,
-SUM(CASE WHEN Channel = '' THEN "Issuance Investor Loan UPB" ELSE 0 END) AS unkown_upb,
+SUM(CASE WHEN Channel = '' THEN "Issuance Investor Loan UPB" ELSE 0 END) AS unknown_upb,
 SUM("Issuance Investor Loan UPB") AS total_upb
 FROM loan_data_set
 GROUP BY Issuance_Year, Issuance_Month
@@ -67,7 +67,7 @@ avg_mbs_holdings - LAG(avg_mbs_holdings,1,1.568056830344e+12) OVER () AS mbs_pur
 FROM fed_holdings)
 
 SELECT Year, Month, total_purchases, mbs_purchases, retail_upb, correspondent_upb,
-broker_upb, unkown_upb, total_upb FROM fed_purchases
+broker_upb, unknown_upb, total_upb FROM fed_purchases
 JOIN totals ON fed_purchases.Year = totals.Issuance_Year AND fed_purchases.Month = totals.Issuance_Month
 ORDER BY Year, Month ASC"""
 prod_queries.append(upb_by_channel_vs_purchases)
@@ -90,13 +90,13 @@ fed_purchases AS (SELECT Year, Month, avg_total_holdings - LAG(avg_total_holding
 avg_mbs_holdings - LAG(avg_mbs_holdings,1,1.568056830344e+12) OVER () AS mbs_purchases
 FROM fed_holdings)
 
-SELECT Year, Month, cash_out_refi, no_cash_refi, purchase, modified_loss_mitigation, total_purchases, mbs_purchases
+SELECT Year, Month, cash_out_refi, no_cash_refi, purchase, modified_loss_mitigation, total,  total_purchases, mbs_purchases
 FROM upb_by_purpose JOIN fed_purchases ON upb_by_purpose.Issuance_Year = fed_purchases.Year AND upb_by_purpose.Issuance_Month = fed_purchases.Month"""
 
 prod_queries.append(purpose_upb_vs_fed_purchases)
 
 cashout_vs_fed_purchases = """WITH upb_by_purpose AS (SELECT Issuance_Year, Issuance_Month,
-SUM("Issuance Investor Loan UPB") AS cash_out_refi
+SUM("Issuance Investor Loan UPB") AS cash_out_refi,
 FROM loan_data_set l
 WHERE "Loan Purpose" = 'C'
 GROUP BY Issuance_Year, Issuance_Month),

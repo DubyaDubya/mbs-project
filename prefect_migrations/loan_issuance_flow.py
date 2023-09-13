@@ -17,6 +17,7 @@ def get_csv_year_month(csv_path):
     year = int(date_str[:4])
     month = int(date_str[4:])
     return (year, month,)
+
 @task
 def loan_add_issuance_columns(table, csv_path, log_prints=True):
     year, month = get_csv_year_month(csv_path)

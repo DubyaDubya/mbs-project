@@ -12,13 +12,6 @@ from settings import aws_access_key, aws_secret_key, aws_region
 read_part = ds.partitioning(
         pa.schema([("Issuance_Year", pa.int64()), ("Issuance_Month", pa.int64())]), 
         flavor="hive")
-s3 = fs.S3FileSystem(access_key=aws_access_key,
-                     secret_key=aws_secret_key,
-                     region=aws_region)
-
-loan_data_set = ds.dataset(fnm_loan_issuance_dest, partitioning=read_part, filesystem=s3)
-security_data_set = ds.dataset(fnm_security_issuance_folder, filesystem=s3)
-fed_data_set = ds.dataset(fed_holdings_folder, filesystem=s3, format='csv')
 
 con = duckdb.connect()
 
@@ -31,7 +24,7 @@ def duck_db_query(filesystem, loan_data_set, security_data_set, fed_data_set, qu
     query_data = res.fetch_arrow_table()
     print(f"query-{query_number} executed")
     print(query_data)
-    pq.write_table(query_data, final_destination, filesystem=s3)
+    pq.write_table(query_data, final_destination, filesystem=filesystem)
     print(f"query-{query_number} written to {final_destination}")
 
 @flow(log_prints=True)

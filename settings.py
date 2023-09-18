@@ -21,6 +21,11 @@ fre_security_issuance_folder = os.environ['FRE_SECURITY_ISSUANCE_FOLDER']
 fre_loan_issuance_src = os.environ['FRE_LOAN_ISSUANCE_SRC']
 fre_loan_issuance_dest = os.environ['FRE_LOAN_ISSUANCE_DEST']
 
+full_security_issuance_dest = os.environ['FULL_SECURITY_ISSUANCE_DEST']
+full_security_issuance_folder = os.environ['FULL_SECURITY_ISSUANCE_FOLDER']
+
+full_loan_issuance_dest = os.environ['FULL_LOAN_ISSUANCE_DEST']
+
 fed_holdings_dest = os.environ['FED_HOLDINGS_DEST']
 fed_holdings_folder = os.environ['FED_HOLDINGS_FOLDER']
 

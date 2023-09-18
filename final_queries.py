@@ -91,7 +91,8 @@ avg_mbs_holdings - LAG(avg_mbs_holdings,1,1.568056830344e+12) OVER () AS mbs_pur
 FROM fed_holdings)
 
 SELECT Year, Month, cash_out_refi, no_cash_refi, purchase, modified_loss_mitigation, total,  total_purchases, mbs_purchases
-FROM upb_by_purpose JOIN fed_purchases ON upb_by_purpose.Issuance_Year = fed_purchases.Year AND upb_by_purpose.Issuance_Month = fed_purchases.Month"""
+FROM upb_by_purpose JOIN fed_purchases ON upb_by_purpose.Issuance_Year = fed_purchases.Year AND upb_by_purpose.Issuance_Month = fed_purchases.Month
+ORDER BY Year, Month ASC"""
 
 prod_queries.append(purpose_upb_vs_fed_purchases)
 
@@ -111,7 +112,8 @@ avg_mbs_holdings - LAG(avg_mbs_holdings,1,1.568056830344e+12) OVER () AS mbs_pur
 FROM fed_holdings)
 
 SELECT Year, Month, cash_out_refi, total_purchases, mbs_purchases
-FROM upb_by_purpose JOIN fed_purchases ON upb_by_purpose.Issuance_Year = fed_purchases.Year AND upb_by_purpose.Issuance_Month = fed_purchases.Month"""
+FROM upb_by_purpose JOIN fed_purchases ON upb_by_purpose.Issuance_Year = fed_purchases.Year AND upb_by_purpose.Issuance_Month = fed_purchases.Month
+ORDER BY Year, Month ASC"""
 prod_queries.append(cashout_vs_fed_purchases)
 
 first_time_upb_vs_fed_purchases = """WITH upb_by_first_time AS (SELECT Issuance_Year, Issuance_Month,
@@ -122,7 +124,8 @@ FROM loan_data_set l
 GROUP BY Issuance_Year, Issuance_Month),
 
 upb_ft_frac AS (SELECT Issuance_Year, Issuance_Month, first_time_upb / total AS first_time_upb_frac, 
-not_first_time_upb / total AS not_first_time_frac FROM upb_by_first_time),
+not_first_time_upb / total AS not_first_time_frac,
+first_time_upb, not_first_time_upb FROM upb_by_first_time),
 
 fed_holdings AS (SELECT Year, Month, AVG(Total) total_holdings, AVG(MBS) mbs_holdings FROM fed_data_set f
 WHERE "As Of Date" >= '2019-06-01'
@@ -133,9 +136,11 @@ fed_purchases AS (SELECT Year, Month, total_holdings - LAG(total_holdings, 1, 3.
 mbs_holdings - LAG(mbs_holdings,1,1.568056830344e+12) OVER () AS mbs_purchases
 FROM fed_holdings)
 
-SELECT Year, Month, first_time_upb_frac, not_first_time_frac, total_purchases, mbs_purchases
+SELECT Year, Month, first_time_upb_frac, not_first_time_frac, first_time_upb, not_first_time_upb,
+total_purchases, mbs_purchases
 FROM fed_purchases JOIN upb_ft_frac ON fed_purchases.Year = upb_ft_frac.Issuance_Year 
-AND fed_purchases.Month = upb_ft_frac.Issuance_Month"""
+AND fed_purchases.Month = upb_ft_frac.Issuance_Month
+ORDER BY Year, Month ASC"""
 prod_queries.append(first_time_upb_vs_fed_purchases)
 
 occupancy_upb_vs_fed_purchases = """WITH upb_by_occupancy AS (SELECT Issuance_Year, Issuance_Month,
@@ -163,7 +168,8 @@ FROM fed_holdings)
 SELECT Year, Month, primary_residence_fraction, secondary_residence_fraction, investment_property_fraction, unknown_fraction,
 total_purchases, mbs_purchases
 FROM fed_purchases JOIN upb_occupancy_frac ON fed_purchases.Year = upb_occupancy_frac.Issuance_Year 
-AND fed_purchases.Month = upb_occupancy_frac.Issuance_Month"""
+AND fed_purchases.Month = upb_occupancy_frac.Issuance_Month
+ORDER BY Year, Month ASC"""
 prod_queries.append(occupancy_upb_vs_fed_purchases)
 
 number_of_units_vs_fed_purchases = """WITH upb_by_units AS (SELECT Issuance_Year, Issuance_Month,
@@ -188,5 +194,6 @@ FROM fed_holdings)
 SELECT Year, Month, single_unit_fraction, multi_unit_fraction,
 total_purchases, mbs_purchases
 FROM fed_purchases JOIN upb_units_frac ON fed_purchases.Year = upb_units_frac.Issuance_Year 
-AND fed_purchases.Month = upb_units_frac.Issuance_Month"""
+AND fed_purchases.Month = upb_units_frac.Issuance_Month
+ORDER BY Year, Month ASC"""
 prod_queries.append(number_of_units_vs_fed_purchases)

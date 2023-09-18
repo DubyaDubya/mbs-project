@@ -1,0 +1,24 @@
+---
+title: "quarto-sample"
+execute:
+    echo: false
+format:
+    html: 
+        code-fold: true
+jupyter: python3
+---
+
+This is a Quarto website.
+
+To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+
+```{python}
+#| label: fig-polar
+#| fig-cap: "A line plot on a polar axis"
+
+import plotly.graph_objects as go
+import plotly.express as px
+from plotly.subplots import make_subplots
+
+
+```

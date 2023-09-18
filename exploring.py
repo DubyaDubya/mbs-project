@@ -2,8 +2,11 @@ import duckdb
 import pyarrow as pa
 import pyarrow.dataset as ds
 import pyarrow.fs as fs
+import time
 
-from settings import fnm_loan_issuance_dest, fnm_security_issuance_folder, fed_holdings_folder
+from settings import fnm_loan_issuance_dest, fnm_security_issuance_folder
+from settings import fre_loan_issuance_dest, fre_security_issuance_folder
+from settings import fed_holdings_folder
 from settings import aws_access_key, aws_secret_key, aws_region
 
 import plotly.graph_objects as go
@@ -699,119 +702,84 @@ FROM fed_purchases JOIN upb_units_frac ON fed_purchases.Year = upb_units_frac.Is
 AND fed_purchases.Month = upb_units_frac.Issuance_Month"""
 #no significant change in number of multi_units
 
+
+prod_query_8_fre_dataset = """WITH upb_by_units AS (SELECT Issuance_Year, Issuance_Month,
+SUM(CASE WHEN "Number of Units" = 1 THEN "Issuance Investor Loan UPB" ELSE 0 END) AS single_unit,
+SUM(CASE WHEN "Number of Units" > 1 THEN "Issuance Investor Loan UPB" ELSE 0 END) AS multi_unit,
+single_unit + multi_unit AS total
+FROM fre_loan_data_set l
+GROUP BY Issuance_Year, Issuance_Month),
+
+upb_units_frac AS (SELECT Issuance_Year, Issuance_Month, single_unit/ total AS single_unit_fraction,
+multi_unit/ total AS multi_unit_fraction FROM upb_by_units),
+
+fed_holdings AS (SELECT Year, Month, AVG(Total) total_holdings, AVG(MBS) mbs_holdings FROM fed_data_set f
+WHERE "As Of Date" >= '2019-06-01'
+GROUP BY Year, Month
+ORDER BY Year, Month ASC),
+
+fed_purchases AS (SELECT Year, Month, total_holdings - LAG(total_holdings, 1, 3.66635423794372e+12) OVER () AS total_purchases,
+mbs_holdings - LAG(mbs_holdings,1,1.568056830344e+12) OVER () AS mbs_purchases
+FROM fed_holdings)
+
+SELECT Year, Month, single_unit_fraction, multi_unit_fraction,
+total_purchases, mbs_purchases
+FROM fed_purchases JOIN upb_units_frac ON fed_purchases.Year = upb_units_frac.Issuance_Year 
+AND fed_purchases.Month = upb_units_frac.Issuance_Month"""
+
+prod_query_8_both_datasets = """WITH upb_by_units AS (SELECT Issuance_Year, Issuance_Month,
+SUM(CASE WHEN "Number of Units" = 1 THEN "Issuance Investor Loan UPB" ELSE 0 END) AS single_unit,
+SUM(CASE WHEN "Number of Units" > 1 THEN "Issuance Investor Loan UPB" ELSE 0 END) AS multi_unit,
+single_unit + multi_unit AS total
+FROM both_loan_data_sets l
+GROUP BY Issuance_Year, Issuance_Month),
+
+upb_units_frac AS (SELECT Issuance_Year, Issuance_Month, single_unit/ total AS single_unit_fraction,
+multi_unit/ total AS multi_unit_fraction FROM upb_by_units),
+
+fed_holdings AS (SELECT Year, Month, AVG(Total) total_holdings, AVG(MBS) mbs_holdings FROM fed_data_set f
+WHERE "As Of Date" >= '2019-06-01'
+GROUP BY Year, Month
+ORDER BY Year, Month ASC),
+
+fed_purchases AS (SELECT Year, Month, total_holdings - LAG(total_holdings, 1, 3.66635423794372e+12) OVER () AS total_purchases,
+mbs_holdings - LAG(mbs_holdings,1,1.568056830344e+12) OVER () AS mbs_purchases
+FROM fed_holdings)
+
+SELECT Year, Month, single_unit_fraction, multi_unit_fraction,
+total_purchases, mbs_purchases
+FROM fed_purchases JOIN upb_units_frac ON fed_purchases.Year = upb_units_frac.Issuance_Year 
+AND fed_purchases.Month = upb_units_frac.Issuance_Month"""
+
 prod_query_8 = number_of_units_vs_fed_purchases
 prod_queries.append(prod_query_8)
 
-res = con.execute(prod_query_1)
-fetched_results = res.fetchall()
+fre_security_data_set = ds.dataset(fre_security_issuance_folder, filesystem=s3)
 
-y_m_array = ['-'.join((str(result[0]), str(result[1]),)) for result in fetched_results]
-w_avg_int = [result[2] for result in fetched_results]
-total_purchases = [result[3] for result in fetched_results]
-mbs_purchases = [result[4] for result in fetched_results]
+fre_loan_data_set = ds.dataset(fre_loan_issuance_dest, partitioning=read_part, filesystem=s3)
 
-fig1 = make_subplots(specs=[[{"secondary_y": True}]])
-fig1.add_trace(
-    go.Scatter(x=y_m_array, y=w_avg_int, name="first_time_buyer"),
-    secondary_y=False,
-)
-fig1.add_trace(
-    go.Scatter(x=y_m_array, y=total_purchases, name="fed total purchases"),
-    secondary_y=True,
-)
-fig1.add_trace(
-    go.Scatter(x=y_m_array, y=mbs_purchases, name="fed mbs purchases"),
-    secondary_y=True,
-)
-fig1.update_layout(
-    title_text="weighted average interest rates"
-)
-fig1.update_xaxes(title_text="year and month")
-fig1.update_yaxes(title_text="<b>primary</b> buyers by prior ownership %", secondary_y=False)
-fig1.update_yaxes(title_text="<b>secondary</b> fed purchases %", secondary_y=True)
-fig1.show()
+#both_loan_data_sets = ds.UnionDataset(loan_data_set.schema, [fre_loan_data_set,loan_data_set])
 
-
+print(security_data_set.schema)
+print("-------------------------------------------------------------------------------------")
+print(fre_security_data_set.schema)
 """
+start_freddie = time.perf_counter()
+res = con.execute(prod_query_8_fre_dataset)
+fetched_results = res.fetchall()
+finish_freddie = time.perf_counter()
+
+start_fannie = time.perf_counter()
 res = con.execute(prod_query_8)
 fetched_results = res.fetchall()
+finish_fannie = time.perf_counter()
 
-y_m_array = ['-'.join((str(result[0]), str(result[1]),)) for result in fetched_results]
-single_unit = [result[2] for result in fetched_results]
-multi_unit = [result[3] for result in fetched_results]
-
-fig8 = make_subplots()
-fig8.add_trace(
-    go.Scatter(x=y_m_array, y=single_unit, name="single_unit"),
-    secondary_y=False,
-)
-fig8.add_trace(
-    go.Scatter(x=y_m_array, y=multi_unit, name="multi_unit"),
-    secondary_y=False,
-)
-fig8.update_xaxes(title_text="year and month")
-fig8.update_yaxes(title_text="<b>primary</b> loans by number of units ownership %", secondary_y=False)
-fig8.show()
-
-
-# plotly 
-res = con.execute(prod_query_6)
+start_both_sets = time.perf_counter()
+res = con.execute(prod_query_8_both_datasets)
 fetched_results = res.fetchall()
-
-y_m_array = ['-'.join((str(result[0]), str(result[1]),)) for result in fetched_results]
-first_time_buyer = [result[2] for result in fetched_results]
-second_time_buyer = [result[3] for result in fetched_results]
-fed_total_purchases = [result[4] for result in fetched_results]
-fed_mbs_purchases = [result[5] for result in fetched_results]
-
-fig6 = make_subplots(specs=[[{"secondary_y": True}]])
-fig6.add_trace(
-    go.Scatter(x=y_m_array, y=first_time_buyer, name="first_time_buyer"),
-    secondary_y=False,
-)
-fig6.add_trace(
-    go.Scatter(x=y_m_array, y=second_time_buyer, name="not first_time buyer"),
-    secondary_y=False,
-)
-
-fig6.update_layout(
-    title_text="first time buyer % vs not first time %"
-)
-fig6.update_xaxes(title_text="year and month")
-fig6.update_yaxes(title_text="<b>primary</b> buyers by prior ownership %", secondary_y=False)
-fig6.show()
+finish_both_sets = time.perf_counter()
+print(f"fannie mae query took {finish_fannie - start_fannie:0.4f} seconds")
+print(f"freddie mac query took {finish_freddie - start_freddie:0.4f} seconds")
+print(f"dual_dataset query took {finish_both_sets - start_both_sets:0.4f} seconds")
 """
-"""
-res = con.execute(occupancy_upb_vs_fed_purchases)
-fetched_results = res.fetchall()
 
-y_m_array = ['-'.join((str(result[0]), str(result[1]),)) for result in fetched_results]
-primary_residence_array = [result[2] for result in fetched_results]
-secondary_residence_array = [result[3] for result in fetched_results]
-investment_property_array = [result[4] for result in fetched_results]
-unknown_upb = [result[5] for result in fetched_results]
-fig7 = make_subplots()
-fig7.add_trace(
-    go.Scatter(x=y_m_array, y=primary_residence_array, name="primary_residence_fraction"),
-    secondary_y=False,
-)
-fig7.add_trace(
-    go.Scatter(x=y_m_array, y=secondary_residence_array, name="secondary_residence"),
-    secondary_y=False,
-)
-fig7.add_trace(
-    go.Scatter(x=y_m_array, y=investment_property_array, name="investment_property_fraction"),
-    secondary_y=False,
-)
-fig7.add_trace(
-    go.Scatter(x=y_m_array, y=unknown_upb, name="unknown_upb_fraction"),
-    secondary_y=False,
-)
-
-fig7.update_layout(
-    title_text="investment property upb and primary residence upb on same axis"
-)
-fig7.update_xaxes(title_text="upbs compared")
-fig7.update_yaxes(title_text="<b>primary</b> yaxis title", secondary_y=False)
-fig7.show()
-"""

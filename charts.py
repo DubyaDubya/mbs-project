@@ -60,7 +60,7 @@ data_table2 = pq.read_table(final_folder + "/query-1.parquet", filesystem=s3)
 y_m_2 = y_m_array(data_table2, 'Year', 'Month')
 total_issuance_upb = [upb for upb in data_table2.column('total_issuance_upb').to_pylist()]
 y1_arrays = {}
-y2_arrays["total UPB of newly issued fannie mae pools"] = total_issuance_upb
+y2_arrays["total UPB of newly issued pools"] = total_issuance_upb
 title_text = "total UPB of newly issued fannie mae pools plotted next to fed balance sheet changes in the same month"
 y_titles[1] = "Trillions of dollars"
 plot2 = dual_axis_chart(y_m_array1, y1_arrays, y2_arrays, x_title, y_titles, title_text)
@@ -74,13 +74,12 @@ wide_df["retail_upb_pct"] = 100 * wide_df["retail_upb"]/ wide_df["total_upb"]
 wide_df["correspondent_upb_pct"] = 100 * wide_df["correspondent_upb"]/ wide_df["total_upb"]
 wide_df["broker_upb_pct"] = 100 * wide_df["broker_upb"]/ wide_df["total_upb"]
 wide_df["unknown_upb_pct"] = 100 * wide_df["unknown_upb"]/ wide_df["total_upb"]
-print(wide_df['retail_upb_pct'])
 
-plot3 = px.bar(wide_df, x="y_m", y=["broker_upb_pct"], title="Wide-Form Input")
+plot3 = px.bar(wide_df, x="y_m", y=["retail_upb_pct", "correspondent_upb_pct", "broker_upb_pct", "unknown_upb_pct"],
+                title="Total UPB by Loan Source")
 
 #
 data_table4 = pq.read_table(final_folder + "/query-3.parquet", filesystem=s3)
-print(data_table4)
 wide_df = data_table4.to_pandas()
 wide_df["y_m"] = wide_df['Year'].astype(str) +"-"+ wide_df["Month"].astype(str)
 wide_df["cash_out_refi_pct"] = 100 * wide_df["cash_out_refi"]/ wide_df["total"]
@@ -88,19 +87,41 @@ wide_df["no_cash_refi_pct"] = 100 * wide_df["no_cash_refi"]/ wide_df["total"]
 wide_df["purchase_pct"] = 100 * wide_df["purchase"]/ wide_df["total"]
 wide_df["modified_loss_mitigation_pct"] = 100 * wide_df["modified_loss_mitigation"]/ wide_df["total"]
 plot4 = px.bar(wide_df, x="y_m", y=["cash_out_refi", "no_cash_refi","purchase","modified_loss_mitigation"],
-                title="Wide-Form Input")
-plot5 = px.bar(wide_df, x="y_m", y=["cash_out_refi"],
-                title="Wide-Form Input")
+                title="Total UPB by Loan Purpose")
+plot5 = px.line(wide_df, x="y_m", y=["cash_out_refi"],
+                title="UPB of Cash Out Refinances Over Time")
 
-plot6 = px.bar(wide_df, x="y_m", y=["purchase"],
-                title="Wide-Form Input")
-plot7 = px.bar(wide_df, x="y_m", y=["no_cash_refi"],
-                title="Wide-Form Input")
+plot6 = px.line(wide_df, x="y_m", y=["purchase"],
+                title="UPB of Purchases Over Time")
+plot6.update_yaxes(range=[0, 90_000_000_000])
+plot7 = px.line(wide_df, x="y_m", y=["no_cash_refi"],
+                title="UPB of Non-cash Refinances Over Time")
 
 data_table5 = pq.read_table(final_folder + "/query-5.parquet", filesystem=s3)
 wide_df=data_table5.to_pandas()
 wide_df["y_m"] = wide_df['Year'].astype(str) +"-"+ wide_df["Month"].astype(str)
-plot8 = px.bar(wide_df, x="y_m", y=["first_time_upb_frac", "not_first_time_frac"],
+
+plot8 = px.line(wide_df, x="y_m", y=["first_time_upb", "not_first_time_upb"],
                 title="Wide-Form Input")
+
+data_table6 = pq.read_table(final_folder +'/query-6.parquet', filesystem=s3)
+wide_df=data_table6.to_pandas()
+wide_df["y_m"] = wide_df['Year'].astype(str) +"-"+ wide_df["Month"].astype(str)
+plot9 = px.bar(wide_df, x="y_m", y=['primary_residence_fraction', 'secondary_residence_fraction',
+                                    'investment_property_fraction', 'unknown_fraction'])
+
+data_table7 = pq.read_table(final_folder + '/query-7.parquet', filesystem=s3)
+wide_df=data_table7.to_pandas()
+wide_df["y_m"] = wide_df['Year'].astype(str) +"-"+ wide_df["Month"].astype(str)
+plot10 = px.bar(wide_df, x="y_m", y=['single_unit_fraction', 'multi_unit_fraction'])
+
+plot1.show()
+plot2.show()
+plot3.show()
+plot4.show()
+plot5.show()
+plot6.show()
+plot7.show()
 plot8.show()
-print(data_table5)
+plot9.show()
+plot10.show()

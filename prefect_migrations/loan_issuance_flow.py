@@ -46,7 +46,7 @@ def loan_issuance_migration(file_system, from_folder, to_path, loan_partitioning
     year_months_csv = [get_csv_year_month(path) for path in from_paths]
     year_months_str = ['/'.join((str(year_month[0]), str(year_month[1]),)) for year_month in year_months_csv]
     csv_ym_to_path = {year_month: from_paths[i] for i, year_month in enumerate(year_months_str)}
-    print("got csv paths")
+    print(f"csv paths: {from_paths}")
 
     parquet_info = file_system.get_file_info(fs.FileSelector(to_path,recursive=True))
     final_file_paths = [fi.path for fi in parquet_info if fi.is_file]

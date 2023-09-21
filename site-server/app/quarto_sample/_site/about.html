@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>MBS Project - About</title>
+<title>MBS Project - How This Analysis Was Performed</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -101,14 +101,28 @@ ul.task-list li input[type="checkbox"] {
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#tools-used" id="toc-tools-used" class="nav-link active" data-scroll-target="#tools-used">Tools used</a></li>
+  <li><a href="#video-walkthrough" id="toc-video-walkthrough" class="nav-link" data-scroll-target="#video-walkthrough">Video Walkthrough</a></li>
+  <li><a href="#overview" id="toc-overview" class="nav-link" data-scroll-target="#overview">Overview</a>
+  <ul class="collapse">
+  <li><a href="#data-pipeline" id="toc-data-pipeline" class="nav-link" data-scroll-target="#data-pipeline">Data Pipeline</a></li>
+  <li><a href="#visualization" id="toc-visualization" class="nav-link" data-scroll-target="#visualization">Visualization</a></li>
+  <li><a href="#front-end-generation" id="toc-front-end-generation" class="nav-link" data-scroll-target="#front-end-generation">Front-end generation</a></li>
+  <li><a href="#site-deployment" id="toc-site-deployment" class="nav-link" data-scroll-target="#site-deployment">Site Deployment</a></li>
+  </ul></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">About</h1>
+<h1 class="title">How This Analysis Was Performed</h1>
 </div>
 
 
@@ -123,9 +137,43 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<p>About this site</p>
+<section id="tools-used" class="level3">
+<h3 class="anchored" data-anchor-id="tools-used">Tools used</h3>
+<ul>
+<li>Python</li>
+<li>Prefect (python workflow orchestration library)</li>
+<li>Apache Arrow via pyarrow (a library for importing data for analytical processing and for creating partitioned datasets)</li>
+<li>S3 (AWS object storage)</li>
+<li>EC2 (AWS server)</li>
+<li>DuckDB (in process OLAP SQL database)</li>
+<li>Pandas (Python library for dataframe based data analysis)</li>
+<li>Plotly (Python library for data visualization)</li>
+<li>Quarto (publishing system for technical documents, like this website)</li>
+<li>FastAPI (lightweight Python Framework for building web servers)</li>
+<li>Docker (tool for managing code environments)</li>
+</ul>
+</section>
+<section id="video-walkthrough" class="level2">
+<h2 class="anchored" data-anchor-id="video-walkthrough">Video Walkthrough</h2>
+</section>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<section id="data-pipeline" class="level3">
+<h3 class="anchored" data-anchor-id="data-pipeline">Data Pipeline</h3>
+<p>To run this analysis, data needed to be integrated from the Federal Reserve’s Open Market API, Fannie Mae’s issuance files and Freddie Mae’s Issuance files</p>
+</section>
+<section id="visualization" class="level3">
+<h3 class="anchored" data-anchor-id="visualization">Visualization</h3>
+</section>
+<section id="front-end-generation" class="level3">
+<h3 class="anchored" data-anchor-id="front-end-generation">Front-end generation</h3>
+</section>
+<section id="site-deployment" class="level3">
+<h3 class="anchored" data-anchor-id="site-deployment">Site Deployment</h3>
 
 
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

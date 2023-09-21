@@ -1,0 +1,33 @@
+---
+title: "How This Analysis Was Performed"
+---
+
+### Tools used
+
+* Python
+* Prefect (python workflow orchestration library)
+* Apache Arrow via pyarrow (a library for importing data for analytical processing and for creating partitioned datasets)
+* S3 (AWS object storage)
+* EC2 (AWS server)
+* DuckDB (in process OLAP SQL database)
+* Pandas (Python library for dataframe based data analysis)
+* Plotly (Python library for data visualization)
+* Quarto (publishing system for technical documents, like this website)
+* FastAPI (lightweight Python Framework for building web servers)
+* Docker (tool for managing code environments)
+
+## Video Walkthrough
+
+## Overview
+
+
+### Data Pipeline
+
+To run this analysis, data needed to be integrated from the Federal Reserve's Open Market API, Fannie Mae's issuance files and Freddie Mae's Issuance files
+
+### Visualization
+
+### Front-end generation
+
+### Site Deployment
+

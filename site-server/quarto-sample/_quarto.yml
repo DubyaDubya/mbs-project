@@ -6,7 +6,7 @@ website:
   navbar:
     left:
       - href: index.qmd
-        text: Home
+        text: MBS Report
       - href: about.qmd
         text: Data Engineering Methodology
 

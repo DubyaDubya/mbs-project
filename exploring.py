@@ -2,11 +2,10 @@ import duckdb
 import pyarrow as pa
 import pyarrow.dataset as ds
 import pyarrow.fs as fs
+import pyarrow.compute as pc
 import time
 
-from settings import fnm_loan_issuance_dest, fnm_security_issuance_folder
-from settings import fre_loan_issuance_dest, fre_security_issuance_folder
-from settings import fed_holdings_folder
+from settings import full_loan_issuance_dest, full_security_issuance_folder, fed_holdings_folder
 from settings import aws_access_key, aws_secret_key, aws_region
 
 import plotly.graph_objects as go
@@ -20,8 +19,8 @@ s3 = fs.S3FileSystem(access_key=aws_access_key,
                      secret_key=aws_secret_key,
                      region=aws_region)
 
-loan_data_set = ds.dataset(fnm_loan_issuance_dest, partitioning=read_part, filesystem=s3)
-security_data_set = ds.dataset(fnm_security_issuance_folder, filesystem=s3)
+loan_data_set = ds.dataset(full_loan_issuance_dest, partitioning=read_part, filesystem=s3)
+security_data_set = ds.dataset(full_security_issuance_folder, filesystem=s3)
 fed_data_set = ds.dataset(fed_holdings_folder, filesystem=s3, format='csv')
 
 con = duckdb.connect()
@@ -754,32 +753,38 @@ AND fed_purchases.Month = upb_units_frac.Issuance_Month"""
 prod_query_8 = number_of_units_vs_fed_purchases
 prod_queries.append(prod_query_8)
 
-fre_security_data_set = ds.dataset(fre_security_issuance_folder, filesystem=s3)
+avg_mortgage_payment_factor = """
+WITH loan_ints AS (SELECT Issuance_Year, Issuance_Month,
+SUM("Issuance Investor Loan UPB") AS upb,
+SUM("Issuance Investor Loan UPB" * "Issuance Interest Rate")/ upb AS w_avg_int, 
+SUM("Issuance Investor Loan UPB" * "Loan Term")/ upb AS w_avg_term
+FROM loan_data_set l
+GROUP BY Issuance_Year, Issuance_Month)
 
-fre_loan_data_set = ds.dataset(fre_loan_issuance_dest, partitioning=read_part, filesystem=s3)
-
-#both_loan_data_sets = ds.UnionDataset(loan_data_set.schema, [fre_loan_data_set,loan_data_set])
-
-print(security_data_set.schema)
-print("-------------------------------------------------------------------------------------")
-print(fre_security_data_set.schema)
+SELECT Issuance_Year, Issuance_Month, upb, 
+w_avg_int/(12 * 100)* pow((1 + w_avg_int/(12*100)), w_avg_term) / (pow((1+ (w_avg_int/(12 * 100))),w_avg_term) - 1)
+AS Monthly_Payment_Factor
+FROM loan_ints
+ORDER BY Issuance_Year, Issuance_Month ASC
 """
-start_freddie = time.perf_counter()
-res = con.execute(prod_query_8_fre_dataset)
-fetched_results = res.fetchall()
-finish_freddie = time.perf_counter()
 
-start_fannie = time.perf_counter()
-res = con.execute(prod_query_8)
-fetched_results = res.fetchall()
-finish_fannie = time.perf_counter()
 
-start_both_sets = time.perf_counter()
-res = con.execute(prod_query_8_both_datasets)
-fetched_results = res.fetchall()
-finish_both_sets = time.perf_counter()
-print(f"fannie mae query took {finish_fannie - start_fannie:0.4f} seconds")
-print(f"freddie mac query took {finish_freddie - start_freddie:0.4f} seconds")
-print(f"dual_dataset query took {finish_both_sets - start_both_sets:0.4f} seconds")
+w_avg_mortgage_payment_factor_and_int_by_first_time = """
+WITH loan_ints AS (SELECT
+"First Time Home Buyer Indicator" as first_time_buyer,
+SUM("Issuance Investor Loan UPB") AS upb,
+SUM("Issuance Investor Loan UPB" * "Issuance Interest Rate")/ upb AS w_avg_int, 
+SUM("Issuance Investor Loan UPB" * "Loan Term")/ upb AS w_avg_term
+FROM loan_data_set l
+GROUP BY first_time_buyer)
+
+SELECT
+first_time_buyer, upb, w_avg_int, w_avg_term,
+w_avg_int/(12 * 100)* pow((1 + w_avg_int/(12*100)), w_avg_term) / (pow((1+ (w_avg_int/(12 * 100))),w_avg_term) - 1)
+AS monthly_payment_factor
+FROM loan_ints
 """
+con.execute(w_avg_mortgage_payment_factor_and_int_by_first_time)
+at = con.fetch_arrow_table()
+print(pc.min_max(at.column('monthly_payment_factor')))
 

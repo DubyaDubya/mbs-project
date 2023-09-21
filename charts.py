@@ -115,6 +115,17 @@ wide_df=data_table7.to_pandas()
 wide_df["y_m"] = wide_df['Year'].astype(str) +"-"+ wide_df["Month"].astype(str)
 plot10 = px.bar(wide_df, x="y_m", y=['single_unit_fraction', 'multi_unit_fraction'])
 
+data_table8 = pq.read_table(final_folder + '/query-8.parquet', filesystem=s3)
+print(data_table8)
+'''
+wide_df = data_table8.to_pandas()
+wide_df["Year_Month"] = wide_df['Issuance_Year'].astype(str) +"-"+ wide_df["Issuance_Month"].astype(str)
+wide_df["Average Loan Term"] = wide_df['AVG("Loan Term")']
+plot11 = px.bar(wide_df, x="Year_Month", y=['Average Loan Term'])
+
+plot11.show()
+'''
+
 plot1.show()
 plot2.show()
 plot3.show()

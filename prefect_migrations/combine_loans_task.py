@@ -1,7 +1,7 @@
 from pyarrow import fs as fs, dataset as ds, parquet as pq
 import pyarrow as pa
 from prefect import task
-from final_loan_schema import final_schema
+from prefect_migrations.final_loan_schema import final_schema
 
 
 def year_month_set_parquet(file_system, path):

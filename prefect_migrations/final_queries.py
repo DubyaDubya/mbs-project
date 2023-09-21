@@ -116,6 +116,7 @@ FROM upb_by_purpose JOIN fed_purchases ON upb_by_purpose.Issuance_Year = fed_pur
 ORDER BY Year, Month ASC"""
 prod_queries.append(cashout_vs_fed_purchases)
 
+
 first_time_upb_vs_fed_purchases = """WITH upb_by_first_time AS (SELECT Issuance_Year, Issuance_Month,
 SUM(CASE WHEN "First Time Home Buyer Indicator" = 'Y' THEN "Issuance Investor Loan UPB" ELSE 0 END) AS first_time_upb,
 SUM(CASE WHEN "First Time Home Buyer Indicator" = 'N' THEN "Issuance Investor Loan UPB" ELSE 0 END) AS not_first_time_upb,
@@ -197,3 +198,61 @@ FROM fed_purchases JOIN upb_units_frac ON fed_purchases.Year = upb_units_frac.Is
 AND fed_purchases.Month = upb_units_frac.Issuance_Month
 ORDER BY Year, Month ASC"""
 prod_queries.append(number_of_units_vs_fed_purchases)
+
+average_loan_term = """
+SELECT Issuance_Year AS Year, Issuance_Month AS Month, AVG("Loan Term") AS Average_Loan_Term
+FROM loan_data_set l
+GROUP BY Year, Month
+ORDER BY Year, Month ASC
+"""
+
+prod_queries.append(average_loan_term)
+
+w_avg_mortgage_payment_factor_by_month = """
+WITH loan_ints AS (SELECT Issuance_Year, Issuance_Month,
+SUM("Issuance Investor Loan UPB" * "Issuance Interest Rate")/ SUM("Issuance Investor Loan UPB") AS w_avg_int, 
+SUM("Issuance Investor Loan UPB") AS upb,
+SUM("Issuance Investor Loan UPB" * "Loan Term")/ SUM("Issuance Investor Loan UPB") w_avg_term
+FROM loan_data_set l
+GROUP BY Issuance_Year, Issuance_Month)
+
+SELECT Issuance_Year, Issuance_Month,
+w_avg_int/(12 * 100)* pow((1 + w_avg_int/(12*100)), w_avg_term) / (pow((1+ (w_avg_int/(12 * 100))),w_avg_term) - 1)
+AS Monthly_Payment_Factor
+FROM loan_ints
+ORDER BY Issuance_Year, Issuance_Month ASC
+"""
+prod_queries.append(w_avg_mortgage_payment_factor_by_month)
+
+w_avg_mortgage_payment_factor = """
+WITH loan_ints AS (SELECT
+SUM("Issuance Investor Loan UPB" * "Issuance Interest Rate")/ SUM("Issuance Investor Loan UPB") AS w_avg_int, 
+SUM("Issuance Investor Loan UPB") AS upb,
+SUM("Issuance Investor Loan UPB" * "Loan Term")/ SUM("Issuance Investor Loan UPB") w_avg_term
+FROM loan_data_set l)
+
+SELECT
+w_avg_int/(12 * 100)* pow((1 + w_avg_int/(12*100)), w_avg_term) / (pow((1+ (w_avg_int/(12 * 100))),w_avg_term) - 1)
+AS Monthly_Payment_Factor
+FROM loan_ints
+"""
+
+prod_queries.append(w_avg_mortgage_payment_factor)
+
+w_avg_mortgage_payment_factor_and_int_by_first_time = """
+WITH loan_ints AS (SELECT
+"First Time Home Buyer Indicator" as first_time_buyer,
+SUM("Issuance Investor Loan UPB") AS upb,
+SUM("Issuance Investor Loan UPB" * "Issuance Interest Rate")/ upb AS w_avg_int, 
+SUM("Issuance Investor Loan UPB" * "Loan Term")/ upb AS w_avg_term
+FROM loan_data_set l
+GROUP BY first_time_buyer)
+
+SELECT
+first_time_buyer, upb, w_avg_int, w_avg_term,
+w_avg_int/(12 * 100)* pow((1 + w_avg_int/(12*100)), w_avg_term) / (pow((1+ (w_avg_int/(12 * 100))),w_avg_term) - 1)
+AS monthly_payment_factor
+FROM loan_ints
+"""
+
+prod_queries.append(w_avg_mortgage_payment_factor_and_int_by_first_time)

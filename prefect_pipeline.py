@@ -9,7 +9,7 @@ from prefect_migrations.loan_issuance_flow import loan_issuance_migration
 from prefect_migrations.duck_db_flow import all_duck_db_queries
 from prefect_migrations.combine_securities_task import combine_and_save
 from prefect_migrations.combine_loans_task import combine_and_save_loans
-from final_queries import prod_queries
+from prefect_migrations.final_queries import prod_queries
 
 from settings import fnm_loan_issuance_src, fnm_loan_issuance_dest
 from settings import fnm_security_issuance_src, fnm_security_issuance_dest, fnm_security_issuance_folder
@@ -30,7 +30,7 @@ s3 = fs.S3FileSystem(access_key=aws_access_key,
 
 @flow(log_prints=True)
 def full_pipeline():
-    
+    '''
     print("starting fed migration")
     migrate_from_fed_api(s3, fed_holdings_dest)
     print(f"fed data written to {fed_holdings_dest}")
@@ -58,15 +58,15 @@ def full_pipeline():
     combine_and_save_loans(s3, fnm_loan_issuance_dest, fre_loan_issuance_dest, full_loan_issuance_dest,
                            loan_part)
     print(f"combined loan dataset written to {full_loan_issuance_dest}")
-
+    
     print("starting duckdb")
-
+'''
     fed_data_set = ds.dataset(fed_holdings_folder, filesystem=s3, format='csv')
     security_data_set = ds.dataset(full_security_issuance_dest, filesystem=s3)
     loan_data_set = ds.dataset(full_loan_issuance_dest, filesystem=s3, partitioning=loan_part)
 
-    
-    fnm_loan_data_set = ds.dataset(fnm_loan_issuance_dest, partitioning=loan_part, filesystem=s3)
+
+
     all_duck_db_queries(s3, loan_data_set, security_data_set, fed_data_set, prod_queries, final_folder)
     print(f"duck db final queries written to {final_folder}")
     print("finished duckdb")

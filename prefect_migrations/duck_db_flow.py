@@ -5,10 +5,6 @@ import pyarrow.parquet as pq
 import pyarrow.fs as fs
 from prefect import task, flow
 
-from settings import fnm_loan_issuance_dest, fnm_security_issuance_folder, fed_holdings_folder
-from settings import aws_access_key, aws_secret_key, aws_region
-
-
 read_part = ds.partitioning(
         pa.schema([("Issuance_Year", pa.int64()), ("Issuance_Month", pa.int64())]), 
         flavor="hive")

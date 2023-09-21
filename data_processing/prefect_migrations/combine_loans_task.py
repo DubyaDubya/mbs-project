@@ -11,15 +11,6 @@ def year_month_set_parquet(file_system, path):
     year_month_parquet = {(int(path[-3].split('=')[1]), int(path[-2].split('=')[1]),) for path in split_final_paths}
     return year_month_parquet
 
-#find all the (Year,Month,) combos in destination
-#find all (Year,Month,) combos in fannie mae folder
-#find all (Year,Month,) combos in freddie mac folder
-
-#for all year month combos in fannie mae and not in destination folder, add to final list
-#for all year month combos in freddie mac and not in destination folder, add to final list
-#for each year month combo in final list, read and concat the associated files from both datasets
-#write dataset
-
 
 @task
 def combine_and_save_loans(file_system, from_fannie, from_freddie, final_destination, partition,log_prints=True):
@@ -62,4 +53,3 @@ def combine_and_save_loans(file_system, from_fannie, from_freddie, final_destina
 
         ds.write_dataset(final_table, final_destination, format='parquet',
                          partitioning=partition, filesystem=file_system, existing_data_behavior='overwrite_or_ignore')
-        #print(f'read and wrote data from {path}')

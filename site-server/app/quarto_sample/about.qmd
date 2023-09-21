@@ -18,16 +18,29 @@ title: "How This Analysis Was Performed"
 
 ## Video Walkthrough
 
+in progress
+
 ## Overview
 
+in progress
 
 ### Data Pipeline
 
-To run this analysis, data needed to be integrated from the Federal Reserve's Open Market API, Fannie Mae's issuance files and Freddie Mae's Issuance files
+in progress
+
+#### Data sources
+
+in progress
+
 
 ### Visualization
 
+in progress
+
 ### Front-end generation
+
+in progress
 
 ### Site Deployment
 
+in progress

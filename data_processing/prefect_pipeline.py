@@ -30,7 +30,6 @@ s3 = fs.S3FileSystem(access_key=aws_access_key,
 
 @flow(log_prints=True)
 def full_pipeline():
-    '''
     print("starting fed migration")
     migrate_from_fed_api(s3, fed_holdings_dest)
     print(f"fed data written to {fed_holdings_dest}")
@@ -60,12 +59,10 @@ def full_pipeline():
     print(f"combined loan dataset written to {full_loan_issuance_dest}")
     
     print("starting duckdb")
-'''
+
     fed_data_set = ds.dataset(fed_holdings_folder, filesystem=s3, format='csv')
     security_data_set = ds.dataset(full_security_issuance_dest, filesystem=s3)
     loan_data_set = ds.dataset(full_loan_issuance_dest, filesystem=s3, partitioning=loan_part)
-
-
 
     all_duck_db_queries(s3, loan_data_set, security_data_set, fed_data_set, prod_queries, final_folder)
     print(f"duck db final queries written to {final_folder}")
